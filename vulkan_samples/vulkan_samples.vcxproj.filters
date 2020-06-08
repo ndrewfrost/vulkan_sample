@@ -1,10 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="examplevulkan.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="example_vulkan.cpp" />
+    <ClCompile Include="core\vk_backend.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="examplevulkan.h" />
+    <ClInclude Include="example_vulkan.hpp" />
+    <ClInclude Include="core\vk_backend.hpp" />
   </ItemGroup>
 </Project>
