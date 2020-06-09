@@ -17,16 +17,27 @@ namespace vkb {
 //-------------------------------------------------------------------------
 // Prepare the vulkan example
 //
-void VulkanExample::prepare()
+void VkExample::prepare()
 {
-    // Create the vulkan instance
+    //VkBackend
 
-    // Create surface
+    //setUpCamera()
 
-    // Create the vulkan device
+    //loadAssets()
 
-    // Prepare Context for rendering
+    //prepareInstanceData()
 
+    //prepareUniformBuffers()
+
+    //setupDescriptorSetLayout()
+
+    //preparePipelines()
+
+    //setupDescriptorPool()
+
+    //setupDescriptorSet()
+
+    //BuildCommandBuffers()
 }
 
 } // namespace app

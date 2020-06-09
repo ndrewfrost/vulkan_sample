@@ -30,6 +30,21 @@ void VkBackend::setupVulkan(const ContextCreateInfo& info, GLFWwindow* window)
 
     createLogicalDeviceAndQueues(info);
 
+    createSwapChain();
+
+    createCommandPool();
+
+    createCommandBuffer();
+
+    createDepthBuffer();
+
+    createRenderPass();
+
+    createPipelineCache();
+
+    createFrameBuffers();
+
+    createSyncObjects();
 }
 
 //-------------------------------------------------------------------------
@@ -39,6 +54,24 @@ void VkBackend::destroy()
 {
     m_device.waitIdle();
 
+    m_device.destroyRenderPass(m_renderPass);
+
+    m_device.destroyImageView(m_depthView);
+    m_device.destroyImage(m_depthImage);
+    m_device.freeMemory(m_depthMemory);
+
+    m_device.destroyPipelineCache(m_pipelineCache);
+
+    for (uint32_t i = 0; i < m_swapchain.getImageCount(); i++) {
+        m_device.destroyFramebuffer(m_framebuffers[i]);
+        m_device.destroyFence(m_fences[i]);
+        m_device.freeCommandBuffers(m_commandPool, m_commandBuffers[i]);
+    }
+
+    m_swapchain.destroy();
+
+    m_device.destroyCommandPool(m_commandPool);
+
     m_device.destroy();
 
     if (m_debugMessenger)
@@ -46,7 +79,6 @@ void VkBackend::destroy()
 
     m_instance.destroySurfaceKHR(m_surface);
     m_instance.destroy();
-
 }
 
 //-------------------------------------------------------------------------
@@ -93,6 +125,10 @@ void VkBackend::initInstance(const ContextCreateInfo& info)
 //
 void VkBackend::createSurface(GLFWwindow* window)
 {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    m_size = vk::Extent2D(width, height);
+
     VkSurfaceKHR rawSurface;
     if (glfwCreateWindowSurface(m_instance, window, nullptr, &rawSurface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
@@ -155,6 +191,8 @@ void VkBackend::pickPhysicalDevice(const ContextCreateInfo& info)
             m_physicalDevice = device;
             m_graphicsQueueIdx = graphicsIdx;
             m_presentQueueIdx = presentIdx;
+            
+            m_depthFormat = vk::Format::eD32SfloatS8Uint;
             return;
         }
     }
@@ -232,6 +270,286 @@ void VkBackend::createLogicalDeviceAndQueues(const ContextCreateInfo& info)
         { vk::ObjectType::eQueue, (uint64_t)(VkQueue)m_presentQueue, "presentQueue" });
 #endif
 }
+
+//-------------------------------------------------------------------------
+// create SwapChain
+//
+void VkBackend::createSwapChain()
+{
+    m_swapchain.init(m_instance, m_device, m_physicalDevice, m_graphicsQueue, m_graphicsQueueIdx,
+        m_presentQueue, m_presentQueueIdx, m_surface, vk::Format::eB8G8R8A8Unorm);
+
+    m_swapchain.update(m_size.width, m_size.height, false);
+
+    m_colorFormat = m_swapchain.getFormat();
+}
+
+//-------------------------------------------------------------------------
+// Create CommandPool
+//
+void VkBackend::createCommandPool()
+{
+    vk::CommandPoolCreateInfo poolInfo = {};
+    poolInfo.flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+    poolInfo.queueFamilyIndex = m_graphicsQueueIdx;
+
+    try {
+        m_commandPool = m_device.createCommandPool(poolInfo);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create command pool!");
+    }
+}
+
+//-------------------------------------------------------------------------
+// Create CommandBuffer
+//
+void VkBackend::createCommandBuffer()
+{
+    m_commandBuffers.resize(m_swapchain.getImageCount());
+
+    vk::CommandBufferAllocateInfo cmdBufferAllocInfo = {};
+    cmdBufferAllocInfo.commandPool        = m_commandPool;
+    cmdBufferAllocInfo.level              = vk::CommandBufferLevel::ePrimary;
+    cmdBufferAllocInfo.commandBufferCount = m_swapchain.getImageCount();
+
+    try {
+        m_commandBuffers = m_device.allocateCommandBuffers(cmdBufferAllocInfo);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
+
+#if _DEBUG
+    for (size_t i = 0; i < m_commandBuffers.size(); i++) {
+        std::string name = std::string("CmdBufferBackend") + std::to_string(i);
+        m_device.setDebugUtilsObjectNameEXT(
+            { vk::ObjectType::eCommandBuffer,
+            reinterpret_cast<const uint64_t&>(m_commandBuffers[i]), name.c_str() });
+    }
+#endif
+}
+
+//-------------------------------------------------------------------------
+// Create Depth Buffer
+//
+void VkBackend::createDepthBuffer()
+{
+    // Depth Info
+    vk::ImageCreateInfo depthStencilCreateInfo = {};
+    depthStencilCreateInfo.imageType   = vk::ImageType::e2D;
+    depthStencilCreateInfo.extent      = vk::Extent3D(m_size.width, m_size.height, 1);
+    depthStencilCreateInfo.format      = m_depthFormat;
+    depthStencilCreateInfo.mipLevels   = 1;
+    depthStencilCreateInfo.arrayLayers = 1;
+    depthStencilCreateInfo.samples     = vk::SampleCountFlagBits::e1;
+    depthStencilCreateInfo.usage       = vk::ImageUsageFlagBits::eDepthStencilAttachment
+                                       | vk::ImageUsageFlagBits::eTransferSrc;
+
+    try {
+        m_depthImage = m_device.createImage(depthStencilCreateInfo);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create depth images!");
+    }
+
+    // find memory requirements
+    const vk::MemoryRequirements memReqs = m_device.getImageMemoryRequirements(m_depthImage);
+    uint32_t memoryTypeIdx = -1;
+    {
+        auto deviceMemoryProperties = m_physicalDevice.getMemoryProperties();
+        for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++) {
+            if ((memReqs.memoryTypeBits & (1 << i))
+                && (deviceMemoryProperties.memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) == vk::MemoryPropertyFlagBits::eDeviceLocal) {
+                memoryTypeIdx = i;
+                break;
+            }
+        }
+        if (memoryTypeIdx == -1)
+            throw std::runtime_error("failed to find suitable memory type!");
+    }
+
+    //Allocate the memory
+    vk::MemoryAllocateInfo memAllocInfo = {};
+    memAllocInfo.allocationSize = memReqs.size;
+    memAllocInfo.memoryTypeIndex = memoryTypeIdx;
+
+    try {
+        m_depthMemory = m_device.allocateMemory(memAllocInfo);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to allocate depth image memory!");
+    }
+
+    // Bind image & memory
+    m_device.bindImageMemory(m_depthImage, m_depthMemory, 0);
+
+    // Create an image barrier to change the layout from
+    // undefined to DepthStencilAttachmentOptimal
+
+    // barrier on top, barrier inside set up cmdbuffer
+
+    // Depth Info
+    const vk::ImageAspectFlags aspect =
+        vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+
+    // Setting up the view
+    vk::ImageViewCreateInfo depthStencilView = {};
+    depthStencilView.viewType         = vk::ImageViewType::e2D;
+    depthStencilView.format           = m_depthFormat;
+    depthStencilView.subresourceRange = { aspect, 0, 1, 0, 1 };
+    depthStencilView.image            = m_depthImage;
+    try {
+        m_depthView = m_device.createImageView(depthStencilView);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create depth image view!");
+    }
+}
+
+//-------------------------------------------------------------------------
+// Create RenderPass
+//
+void VkBackend::createRenderPass()
+{
+    std::array<vk::AttachmentDescription, 2> attachments = {};
+    // Color Attachment
+    attachments[0].format         = m_colorFormat;
+    attachments[0].samples        = vk::SampleCountFlagBits::e1;
+    attachments[0].loadOp         = vk::AttachmentLoadOp::eClear;
+    attachments[0].storeOp        = vk::AttachmentStoreOp::eStore;
+    attachments[0].stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+    attachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+    attachments[0].initialLayout  = vk::ImageLayout::eUndefined;
+    attachments[0].finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+    // Depth Attachment
+    attachments[1].format         = m_depthFormat;
+    attachments[1].samples        = vk::SampleCountFlagBits::e1;
+    attachments[1].loadOp         = vk::AttachmentLoadOp::eClear;
+    attachments[1].storeOp        = vk::AttachmentStoreOp::eStore;
+    attachments[1].stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+    attachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+    attachments[1].initialLayout  = vk::ImageLayout::eUndefined;
+    attachments[1].finalLayout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+    const vk::AttachmentReference colorReference{ 0,  vk::ImageLayout::eColorAttachmentOptimal };
+    const vk::AttachmentReference depthReference{ 1, vk::ImageLayout::eDepthStencilAttachmentOptimal };
+    
+    vk::SubpassDescription subpass  = {};
+    subpass.pipelineBindPoint       = vk::PipelineBindPoint::eGraphics;
+    subpass.colorAttachmentCount    = 1;
+    subpass.pColorAttachments       = &colorReference;
+    subpass.pDepthStencilAttachment = &depthReference;
+
+    std::array<vk::SubpassDependency, 2> dependencies;
+
+    dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass      = 0;
+    dependencies[0].srcStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[0].dstStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[0].srcAccessMask   = vk::AccessFlagBits::eMemoryRead;
+    dependencies[0].dstAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
+                                    | vk::AccessFlagBits::eColorAttachmentWrite;
+    dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;
+
+    dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass      = 0;
+    dependencies[0].srcStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[0].dstStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[0].srcAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
+                                    | vk::AccessFlagBits::eColorAttachmentWrite; 
+    dependencies[0].dstAccessMask   = vk::AccessFlagBits::eMemoryRead;
+    dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;    
+
+    vk::RenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
+    renderPassInfo.pAttachments    = attachments.data();
+    renderPassInfo.subpassCount    = 1;
+    renderPassInfo.pSubpasses      = &subpass;
+    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());;
+    renderPassInfo.pDependencies   = dependencies.data();
+
+    try {
+        m_renderPass = m_device.createRenderPass(renderPassInfo);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create render pass!");
+    }
+
+#ifdef _DEBUG
+    m_device.setDebugUtilsObjectNameEXT(
+        { vk::ObjectType::eRenderPass, reinterpret_cast<const uint64_t&>(m_renderPass), "renderPassBackend" });
+#endif  
+
+}
+
+//-------------------------------------------------------------------------
+// Create PipelineCache
+//
+void VkBackend::createPipelineCache()
+{
+    try {
+        m_pipelineCache = m_device.createPipelineCache(vk::PipelineCacheCreateInfo());
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create pipeline cache!");
+    }
+}
+
+//-------------------------------------------------------------------------
+// Create FrameBuffers
+//
+void VkBackend::createFrameBuffers()
+{
+    std::array<vk::ImageView, 2> attachments;
+    attachments[1] = m_depthView;
+
+    vk::FramebufferCreateInfo framebufferInfo = {};
+    framebufferInfo.renderPass      = m_renderPass;
+    framebufferInfo.attachmentCount = 2;
+    framebufferInfo.pAttachments    = attachments.data();
+    framebufferInfo.width           = m_size.width;
+    framebufferInfo.height          = m_size.height;
+    framebufferInfo.layers          = 1;
+
+    // create frame buffer for every swapchain image
+    for (uint32_t i = 0; i < m_swapchain.getImageCount(); i++) {        
+        attachments[0] = m_swapchain.getImageView(i);      
+
+        try {
+            m_framebuffers[i] = m_device.createFramebuffer(framebufferInfo);
+        }
+        catch (vk::SystemError err) {
+            throw std::runtime_error("failed to create framebuffer!");
+        }
+    }
+
+#ifdef _DEBUG
+    for (size_t i = 0; i < m_framebuffers.size(); i++) {
+        std::string name = std::string("frameBufBack") + std::to_string(i);
+        m_device.setDebugUtilsObjectNameEXT(
+            { vk::ObjectType::eFramebuffer, reinterpret_cast<const uint64_t&>(m_framebuffers[i]), name.c_str() });
+    }
+#endif
+}
+
+//-------------------------------------------------------------------------
+// Create SynchObjects
+//
+void VkBackend::createSyncObjects()
+{
+    m_fences.resize(m_swapchain.getImageCount());
+
+    try {
+        for (uint32_t i = 0; i < m_swapchain.getImageCount(); ++i) {
+            m_fences[i] = m_device.createFence({ vk::FenceCreateFlagBits::eSignaled });
+        }
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to create synchronization objects for a frame!");
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 // Debug System Tools                                                    //

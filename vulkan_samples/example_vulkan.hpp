@@ -17,13 +17,13 @@ namespace vkb {
 // VulkanExample                                                         //
 ///////////////////////////////////////////////////////////////////////////
 
-class VulkanExample
+class VkExample : public VkBackend
 {
 public:
 
-    VulkanExample() = default;
+    VkExample() = default;
 
-    virtual ~VulkanExample();
+    virtual ~VkExample();
 
     virtual void prepare();
 
@@ -38,6 +38,6 @@ public:
 protected:
 
 
-}; // Class ExampleVulkan
+}; // Class VkExample
 
 }  // namespace app
