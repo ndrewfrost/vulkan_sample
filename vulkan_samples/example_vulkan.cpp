@@ -1,7 +1,7 @@
 /*
  *
  * Andrew Frost
- * examplevulkan.cpp
+ * example-vulkan.cpp
  * 2020
  *
  */
@@ -17,9 +17,10 @@ namespace vkb {
 //-------------------------------------------------------------------------
 // Prepare the vulkan example
 //
-void VkExample::prepare()
+void VkExample::setupVulkan(const ContextCreateInfo& info, GLFWwindow* window)
 {
     //VkBackend
+    VkBackend::setupVulkan(info, window);
 
     //setUpCamera()
 

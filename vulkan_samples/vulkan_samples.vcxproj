@@ -157,12 +157,16 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scene graph\components\sub_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\swapchain.hpp" />
     <ClInclude Include="core\vk_backend.hpp" />
     <ClInclude Include="example_vulkan.hpp" />
+    <ClInclude Include="external\vma\vk_mem_alloc.h" />
     <ClInclude Include="helper\debug.hpp" />
+    <ClInclude Include="scene graph\component.hpp" />
+    <ClInclude Include="scene graph\components\sub_mesh.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

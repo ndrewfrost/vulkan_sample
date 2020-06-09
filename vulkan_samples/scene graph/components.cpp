@@ -1,0 +1,20 @@
+/*
+ *
+ * Andrew Frost
+ * components.hpp
+ * 2020
+ *
+ */
+
+#include "components.hpp"
+
+namespace vkb {
+namespace sg {
+
+///////////////////////////////////////////////////////////////////////////
+// Component                                                             //
+///////////////////////////////////////////////////////////////////////////
+
+
+} // namespace sg
+} // namespace vkb

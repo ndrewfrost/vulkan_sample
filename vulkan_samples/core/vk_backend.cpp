@@ -550,6 +550,66 @@ void VkBackend::createSyncObjects()
     }
 }
 
+//-------------------------------------------------------------------------
+// function to call before rendering
+//
+void VkBackend::prepareFrame()
+{// Acquire the next image from the swap chain
+    auto result = m_swapchain.acquire();
+    // Recreate the swapchain if it's no longer compatible with the surface
+    if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
+        onWindowResize(m_size.width, m_size.height);
+    }
+    else if (result != vk::Result::eSuccess) {
+        throw std::runtime_error("failed to acquire image from swapchain!");
+    }
+
+    // fence until cmd buffer has finished executing before using again
+    uint32_t imageIndex = m_swapchain.getActiveImageIndex();
+    while (m_device.waitForFences(m_fences[imageIndex], VK_TRUE, 10000) == vk::Result::eTimeout) {}
+}
+
+//-------------------------------------------------------------------------
+// function to call for submitting the rendering command
+//
+void VkBackend::submitFrame()
+{
+    uint32_t imageIndex = m_swapchain.getActiveImageIndex();
+    m_device.resetFences(m_fences[imageIndex]);
+
+    vk::Semaphore semaphoreRead  = m_swapchain.getActiveReadSemaphore();
+    vk::Semaphore semaphoreWrite = m_swapchain.getActiveWrittenSemaphore();
+
+    // Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+    const vk::PipelineStageFlags waitStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+    vk::SubmitInfo submitInfo = {};
+    submitInfo.waitSemaphoreCount   = 1;                              // One wait semaphore
+    submitInfo.pWaitSemaphores      = &semaphoreRead;                 // Semaphore(s) to wait upon before the submitted command buffer starts executing
+    submitInfo.pWaitDstStageMask    = &waitStageMask;                 // Pointer to the list of pipeline stages that the semaphore waits will occur at
+    submitInfo.commandBufferCount   = 1;                              // One Command Buffer
+    submitInfo.pCommandBuffers      = &m_commandBuffers[imageIndex];  // Command buffers(s) to execute in this batch (submission)
+    submitInfo.signalSemaphoreCount = 1;                              // One signal Semaphore
+    submitInfo.pSignalSemaphores    = &semaphoreWrite;                // Semaphore(s) to be signaled when command buffers have completed
+
+    // Submit to the graphics queue passing a wait fence
+    try {
+        m_graphicsQueue.submit(submitInfo, m_fences[imageIndex]);
+    }
+    catch (vk::SystemError err) {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+
+    m_swapchain.present(m_graphicsQueue);
+}
+
+//-------------------------------------------------------------------------
+// On Window Size Callback
+// - Destroy allocated frames, then rebuild with new size
+//
+void VkBackend::onWindowResize(uint32_t width, uint32_t height)
+{
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // Debug System Tools                                                    //

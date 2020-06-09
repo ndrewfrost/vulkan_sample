@@ -1,7 +1,7 @@
 /*
  *
  * Andrew Frost
- * examplevulkan.hpp
+ * example_vulkan.hpp
  * 2020
  *
  */
@@ -10,6 +10,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "core/vk_backend.hpp"
+#include "scene graph/components/sub_mesh.hpp"
 
 namespace vkb {
 
@@ -25,15 +26,21 @@ public:
 
     virtual ~VkExample();
 
-    virtual void prepare();
+    virtual void setupVulkan(const ContextCreateInfo& info, GLFWwindow* window) override;
 
-    virtual void update();
-    
-    virtual void resize();
+    void loadAssets();
 
-    virtual void inputEvents();
+    void createDescriptorSetLayout();
 
-    virtual void finish();
+    void createPipelines();
+
+    void createUniformBuffer();
+
+    void updateUniformBuffer();
+
+    void render();
+
+    virtual void onWindowResize(uint32_t width, uint32_t height) override;
     
 protected:
 

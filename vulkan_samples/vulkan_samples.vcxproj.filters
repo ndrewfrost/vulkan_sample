@@ -11,11 +11,15 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="core\swapchain.cpp" />
+    <ClCompile Include="scene graph\components\sub_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="example_vulkan.hpp" />
     <ClInclude Include="core\vk_backend.hpp" />
     <ClInclude Include="core\swapchain.hpp" />
     <ClInclude Include="helper\debug.hpp" />
+    <ClInclude Include="external\vma\vk_mem_alloc.h" />
+    <ClInclude Include="scene graph\components\sub_mesh.hpp" />
+    <ClInclude Include="scene graph\component.hpp" />
   </ItemGroup>
 </Project>
