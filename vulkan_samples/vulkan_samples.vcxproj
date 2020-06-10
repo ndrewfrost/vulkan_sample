@@ -161,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\glm_common.h" />
+    <ClInclude Include="core\buffer.hpp" />
     <ClInclude Include="core\image.hpp" />
     <ClInclude Include="core\swapchain.hpp" />
     <ClInclude Include="core\vk_backend.hpp" />

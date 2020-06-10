@@ -27,5 +27,6 @@
     <ClInclude Include="scene graph\components\image.hpp" />
     <ClInclude Include="scene graph\components\sampler.hpp" />
     <ClInclude Include="core\image.hpp" />
+    <ClInclude Include="core\buffer.hpp" />
   </ItemGroup>
 </Project>
