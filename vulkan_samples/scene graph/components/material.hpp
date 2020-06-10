@@ -25,16 +25,31 @@ enum class AlphaMode {
 ///////////////////////////////////////////////////////////////////////////
 // Material                                                              //
 ///////////////////////////////////////////////////////////////////////////
+// Material associated with a submesh. A collection of textures and      //
+// alpha treatment                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 class Material : public Component
 {
 public:
+    //---------------------------------------------------------------------
+    //
+    //
     Material(const std::string& name) : Component(name) {}
 
+    //---------------------------------------------------------------------
+    // 
+    //
     Material(Material&& other) = default;
 
+    //---------------------------------------------------------------------
+    // 
+    //
     virtual ~Material() = default;
 
+    //---------------------------------------------------------------------
+    // 
+    //
     virtual std::type_index getType() override { return typeid(Material); }
 
 public:

@@ -18,17 +18,23 @@ namespace sg {
 ///////////////////////////////////////////////////////////////////////////
 // Sampler                                                               //
 ///////////////////////////////////////////////////////////////////////////
+// Scene Graph component for vk::Sampler                                 //
+///////////////////////////////////////////////////////////////////////////
 
 class Sampler : public Component
 {
 public:
+    //---------------------------------------------------------------------
     Sampler(const std::string& name, vk::Sampler sampler)
         : Component(name) { m_sampler = sampler; }
 
+    //---------------------------------------------------------------------
     Sampler(Sampler&& other) = default;
 
+    //---------------------------------------------------------------------
     virtual ~Sampler() = default;
 
+    //---------------------------------------------------------------------
     virtual std::type_index getType() override { return typeid(Sampler); }
 
 public:

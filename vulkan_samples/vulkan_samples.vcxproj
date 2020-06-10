@@ -157,12 +157,12 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="scene graph\components\sub_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\glm_common.h" />
     <ClInclude Include="core\buffer.hpp" />
     <ClInclude Include="core\image.hpp" />
+    <ClInclude Include="core\shader_module.hpp" />
     <ClInclude Include="core\swapchain.hpp" />
     <ClInclude Include="core\vk_backend.hpp" />
     <ClInclude Include="example_vulkan.hpp" />

@@ -18,25 +18,35 @@ namespace sg {
 ///////////////////////////////////////////////////////////////////////////
 // Texture                                                               //
 ///////////////////////////////////////////////////////////////////////////
+// An Image with an associated Sampler                                   //
+///////////////////////////////////////////////////////////////////////////
 
 class Texture : public Component
 {
 public:
+    //---------------------------------------------------------------------
     Texture(const std::string& name) : Component(name) {}
 
+    //---------------------------------------------------------------------
     Texture(Texture&& other) = default;
 
+    //---------------------------------------------------------------------
     virtual ~Texture() = default;
 
+    //---------------------------------------------------------------------
     virtual std::type_index getType() override { return typeid(Texture); }
 
-    void setImage(Image& image);
+    //---------------------------------------------------------------------
+    void setImage(Image& image) { m_image = &image; }
 
-    Image* getImage();
+    //---------------------------------------------------------------------
+    Image* getImage() { return m_image; }
 
-    void setSampler(Sampler& sampler);
+    //---------------------------------------------------------------------
+    void setSampler(Sampler& sampler) { m_sampler = &sampler; }
 
-    Sampler* getSampler();
+    //---------------------------------------------------------------------
+    Sampler* getSampler() { return m_sampler; }
 
 private:
     Image*   m_image{ nullptr };
