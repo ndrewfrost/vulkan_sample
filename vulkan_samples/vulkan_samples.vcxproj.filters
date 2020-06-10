@@ -21,5 +21,10 @@
     <ClInclude Include="external\vma\vk_mem_alloc.h" />
     <ClInclude Include="scene graph\components\sub_mesh.hpp" />
     <ClInclude Include="scene graph\component.hpp" />
+    <ClInclude Include="common\glm_common.h" />
+    <ClInclude Include="scene graph\components\material.hpp" />
+    <ClInclude Include="scene graph\components\texture.hpp" />
+    <ClInclude Include="scene graph\components\image.hpp" />
+    <ClInclude Include="scene graph\components\sampler.hpp" />
   </ItemGroup>
 </Project>

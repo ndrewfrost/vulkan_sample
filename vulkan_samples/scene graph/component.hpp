@@ -29,9 +29,9 @@ public:
 
     virtual ~Component() = default;
 
-    const std::string& get_name() const { return name; }
+    const std::string& getName() const { return name; }
 
-    virtual std::type_index get_type() = 0;
+    virtual std::type_index getType() = 0;
 
 private:
     std::string name;
