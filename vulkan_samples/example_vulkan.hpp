@@ -18,7 +18,7 @@ namespace vkb {
 // VulkanExample                                                         //
 ///////////////////////////////////////////////////////////////////////////
 
-class VkExample : public VkBackend
+class VkExample : public core::VkBackend
 {
 public:
 
@@ -26,7 +26,7 @@ public:
 
     virtual ~VkExample();
 
-    virtual void setupVulkan(const ContextCreateInfo& info, GLFWwindow* window) override;
+    virtual void setupVulkan(const core::ContextCreateInfo& info, GLFWwindow* window) override;
 
     void loadAssets();
 

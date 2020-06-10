@@ -17,10 +17,10 @@ namespace vkb {
 //-------------------------------------------------------------------------
 // Prepare the vulkan example
 //
-void VkExample::setupVulkan(const ContextCreateInfo& info, GLFWwindow* window)
+void VkExample::setupVulkan(const core::ContextCreateInfo& info, GLFWwindow* window)
 {
     //VkBackend
-    VkBackend::setupVulkan(info, window);
+    core::VkBackend::setupVulkan(info, window);
 
     //setUpCamera()
 
