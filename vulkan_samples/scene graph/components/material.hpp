@@ -33,23 +33,15 @@ class Material : public Component
 {
 public:
     //---------------------------------------------------------------------
-    //
-    //
     Material(const std::string& name) : Component(name) {}
 
     //---------------------------------------------------------------------
-    // 
-    //
     Material(Material&& other) = default;
 
     //---------------------------------------------------------------------
-    // 
-    //
     virtual ~Material() = default;
 
     //---------------------------------------------------------------------
-    // 
-    //
     virtual std::type_index getType() override { return typeid(Material); }
 
 public:

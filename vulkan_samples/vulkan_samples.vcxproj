@@ -157,9 +157,11 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scene graph\components\image\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\glm_common.h" />
+    <ClInclude Include="common\utils.h" />
     <ClInclude Include="core\buffer.hpp" />
     <ClInclude Include="core\image.hpp" />
     <ClInclude Include="core\shader_module.hpp" />
@@ -170,6 +172,9 @@
     <ClInclude Include="helper\debug.hpp" />
     <ClInclude Include="scene graph\component.hpp" />
     <ClInclude Include="scene graph\components\image.hpp" />
+    <ClInclude Include="scene graph\components\image\astc.hpp" />
+    <ClInclude Include="scene graph\components\image\ktx.hpp" />
+    <ClInclude Include="scene graph\components\image\stb.hpp" />
     <ClInclude Include="scene graph\components\material.hpp" />
     <ClInclude Include="scene graph\components\sampler.hpp" />
     <ClInclude Include="scene graph\components\sub_mesh.hpp" />

@@ -11,6 +11,7 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="core\swapchain.cpp" />
+    <ClCompile Include="scene graph\components\image\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="example_vulkan.hpp" />
@@ -28,5 +29,9 @@
     <ClInclude Include="core\buffer.hpp" />
     <ClInclude Include="core\shader_module.hpp" />
     <ClInclude Include="scene graph\components\texture.hpp" />
+    <ClInclude Include="common\utils.h" />
+    <ClInclude Include="scene graph\components\image\stb.hpp" />
+    <ClInclude Include="scene graph\components\image\astc.hpp" />
+    <ClInclude Include="scene graph\components\image\ktx.hpp" />
   </ItemGroup>
 </Project>

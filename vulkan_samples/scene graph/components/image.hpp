@@ -11,10 +11,20 @@
 #include <vector>
 #include "../../core/image.hpp"
 #include "../component.hpp"
+#include "image/ktx.hpp"
+#include "image/astc.hpp"
+#include "image/stb.hpp"
+#include "../../common/utils.h"
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize.h>
 
 namespace vkb {
 namespace sg {
 
+//-------------------------------------------------------------------------
+// Mimmap information
+//
 struct Mipmap
 {
     uint32_t     level  = 0;                     // mipmap level
@@ -24,6 +34,8 @@ struct Mipmap
 
 ///////////////////////////////////////////////////////////////////////////
 // Image                                                                 //
+///////////////////////////////////////////////////////////////////////////
+// Image associated with texture for scene graph                         //
 ///////////////////////////////////////////////////////////////////////////
 
 class Image : public Component
@@ -43,19 +55,21 @@ public:
     //---------------------------------------------------------------------
     // Load image, checking for file extension
     //
-    static std::unique_ptr<Image> load(const std::string& name, const std::string& uri)
+    std::unique_ptr<Image> load(const std::string& name, const std::string& uri)
     {
         std::unique_ptr<Image> image{ nullptr };
         
+        //std::vector<uint8_t> data = fs::read_asset(uri);
+
         // Get file extension
-        auto extension = get_extension(uri);
+        auto extension = getExtension(uri);
 
         if (extension == "png" || extension == "jpg")        
-            image = std::make_unique<Stb>(name, m_data);        
+            image = std::make_unique<Stb>(name, data);        
         else if (extension == "astc")        
-            image = std::make_unique<Astc>(name, m_data);        
+            image = std::make_unique<Astc>(name, data);        
         else if (extension == "ktx")        
-            image = std::make_unique<Ktx>(name, m_data);
+            image = std::make_unique<Ktx>(name, data);
         
         return image;
     }
@@ -77,9 +91,7 @@ public:
     }
 
     //---------------------------------------------------------------------
-    vk::Format getFormat() const {
-        return m_format;
-    }
+    vk::Format getFormat() const { return m_format; }
 
     //---------------------------------------------------------------------
     const vk::Extent3D& getExtent() const { return m_mipmaps.at(0).extent; }
@@ -94,7 +106,48 @@ public:
     const std::vector<std::vector<VkDeviceSize>>& getOffsets() const { return m_offsets; }
 
     //---------------------------------------------------------------------
-    void generateMipmaps();
+    void generateMipmaps()
+    {
+        assert(m_mipmaps.size() == 1 && "Mipmaps already generated");
+
+        if (m_mipmaps.size() > 1) return; 
+        
+        vk::Extent3D extent     = getExtent();
+        uint32_t     nextWidth  = std::max<uint32_t>(1u, extent.width/2); 
+        uint32_t     nextHeight = std::max<uint32_t>(1u, extent.height/2);
+        uint32_t     channels   = 4;
+        uint32_t     nextSize   = channels * nextHeight * nextWidth;
+
+        while (true) {
+            // make space for next mipmap
+            uint32_t oldSize = static_cast<uint32_t>(m_data.size());
+            m_data.resize(oldSize + nextSize);
+
+            auto& previousMipmap = m_mipmaps.back();
+            // update mipmaps
+            Mipmap nextMipmap = {};
+            nextMipmap.level  = previousMipmap.level + 1;
+            nextMipmap.offset = oldSize;
+            nextMipmap.extent = vk::Extent3D{nextWidth, nextHeight, 1u};
+
+            // fill next mipmap memory
+//THIRD PARTY TODO
+            stbir_resize_uint8(m_data.data() + previousMipmap.offset, previousMipmap.extent.width, previousMipmap.extent.height, 0,
+                               m_data.data() + nextMipmap.offset, nextMipmap.extent.width, nextMipmap.extent.height, 0, channels);
+
+            m_mipmaps.emplace_back(std::move(nextMipmap));
+
+            // next mipmap values
+            nextWidth  = std::max<uint32_t>(1u, nextWidth / 2);
+            nextHeight = std::max<uint32_t>(1u, nextHeight / 2);
+            nextSize   = nextWidth * nextHeight * channels;
+
+            if (nextWidth == 1 && nextHeight == 1)
+            {
+                break;
+            }
+        }
+    }
 
     //---------------------------------------------------------------------
     void createVkImage(
@@ -103,8 +156,43 @@ public:
         vk::ImageCreateFlags flags = vk::ImageCreateFlags())
     {
         assert(!m_image && !m_imageView && "Image already constructed");
-        m_image = std::make_unique<core::Image>();
-        m_imageView = ;
+       
+        // image
+        m_image = std::make_unique<core::Image>(device, getExtent(), m_format, 
+            vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+            VMA_MEMORY_USAGE_GPU_ONLY, vk::SampleCountFlagBits::e1, m_layers, 
+            vk::ImageTiling::eOptimal);
+        
+        // image view
+        vk::ImageViewCreateInfo viewInfo = {};
+
+        switch (imageViewType) {
+        case vk::ImageViewType::e1D:
+            viewInfo.viewType = vk::ImageViewType::e1D;
+            break;
+        case vk::ImageViewType::e2D:
+            viewInfo.viewType = vk::ImageViewType::e2D;
+            break;
+        case vk::ImageViewType::e3D:
+            viewInfo.viewType = vk::ImageViewType::e3D;
+            break;
+        default:
+            assert(0);
+        }
+
+        viewInfo.format = m_format;
+        viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+        try {
+            m_imageView = device.createImageView(viewInfo);
+        }
+        catch (vk::SystemError err) {
+            throw std::runtime_error("failed to create ImageView(SG)!");
+        }
     }
 
     //---------------------------------------------------------------------
