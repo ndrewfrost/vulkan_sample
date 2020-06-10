@@ -10,6 +10,7 @@
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 namespace vkb {
+namespace core {
 
 ///////////////////////////////////////////////////////////////////////////
 // VulkanBackend                                                         //
@@ -97,16 +98,16 @@ void VkBackend::initInstance(const ContextCreateInfo& info)
 
     vk::ApplicationInfo appInfo = {};
     appInfo.pApplicationName = info.appTitle;
-    appInfo.pEngineName      = info.appEngine;
-    appInfo.apiVersion       = VK_API_VERSION_1_0;
+    appInfo.pEngineName = info.appEngine;
+    appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    vk::InstanceCreateInfo createInfo  = {};
-    createInfo.pApplicationInfo        = &appInfo;
-    createInfo.enabledExtensionCount   = static_cast<uint32_t>(info.instanceExtensions.size());
+    vk::InstanceCreateInfo createInfo = {};
+    createInfo.pApplicationInfo = &appInfo;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(info.instanceExtensions.size());
     createInfo.ppEnabledExtensionNames = info.instanceExtensions.data();
 
     if (info.enableValidationLayers) {
-        createInfo.enabledLayerCount   = static_cast<uint32_t>(info.validationLayers.size());
+        createInfo.enabledLayerCount = static_cast<uint32_t>(info.validationLayers.size());
         createInfo.ppEnabledLayerNames = info.validationLayers.data();
     }
 
@@ -191,7 +192,7 @@ void VkBackend::pickPhysicalDevice(const ContextCreateInfo& info)
             m_physicalDevice = device;
             m_graphicsQueueIdx = graphicsIdx;
             m_presentQueueIdx = presentIdx;
-            
+
             m_depthFormat = vk::Format::eD32SfloatS8Uint;
             return;
         }
@@ -217,7 +218,7 @@ void VkBackend::createLogicalDeviceAndQueues(const ContextCreateInfo& info)
     for (uint32_t queueFamily : uniqueQueueFamilies) {
         vk::DeviceQueueCreateInfo queueInfo = {};
         queueInfo.queueFamilyIndex = queueFamily;
-        queueInfo.queueCount       = 1;
+        queueInfo.queueCount = 1;
         queueInfo.pQueuePriorities = &queuePriority;
 
         queueCreateInfos.push_back(queueInfo);
@@ -229,21 +230,21 @@ void VkBackend::createLogicalDeviceAndQueues(const ContextCreateInfo& info)
 
     // Vulkan >= 1.1 uses pNext to enable features, and not pEnabledFeatures
     vk::PhysicalDeviceFeatures2 enabledFeatures2 = {};
-    enabledFeatures2.features                   = m_physicalDevice.getFeatures();
+    enabledFeatures2.features = m_physicalDevice.getFeatures();
     enabledFeatures2.features.samplerAnisotropy = VK_TRUE;
-    enabledFeatures2.pNext                      = &scalarFeature;
+    enabledFeatures2.pNext = &scalarFeature;
     m_physicalDevice.getFeatures2(&enabledFeatures2);
 
     vk::DeviceCreateInfo deviceCreateInfo = {};
-    deviceCreateInfo.queueCreateInfoCount    = static_cast<uint32_t>(queueCreateInfos.size());
-    deviceCreateInfo.pQueueCreateInfos       = queueCreateInfos.data();
-    deviceCreateInfo.enabledExtensionCount   = static_cast<uint32_t>(info.deviceExtensions.size());
+    deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+    deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(info.deviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = info.deviceExtensions.data();
-    deviceCreateInfo.pEnabledFeatures        = nullptr;
-    deviceCreateInfo.pNext                   = &enabledFeatures2;
+    deviceCreateInfo.pEnabledFeatures = nullptr;
+    deviceCreateInfo.pNext = &enabledFeatures2;
 
     if (info.enableValidationLayers) {
-        deviceCreateInfo.enabledLayerCount   = static_cast<uint32_t>(info.validationLayers.size());
+        deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(info.validationLayers.size());
         deviceCreateInfo.ppEnabledLayerNames = info.validationLayers.data();
     }
 
@@ -290,7 +291,7 @@ void VkBackend::createSwapChain()
 void VkBackend::createCommandPool()
 {
     vk::CommandPoolCreateInfo poolInfo = {};
-    poolInfo.flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+    poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
     poolInfo.queueFamilyIndex = m_graphicsQueueIdx;
 
     try {
@@ -309,8 +310,8 @@ void VkBackend::createCommandBuffer()
     m_commandBuffers.resize(m_swapchain.getImageCount());
 
     vk::CommandBufferAllocateInfo cmdBufferAllocInfo = {};
-    cmdBufferAllocInfo.commandPool        = m_commandPool;
-    cmdBufferAllocInfo.level              = vk::CommandBufferLevel::ePrimary;
+    cmdBufferAllocInfo.commandPool = m_commandPool;
+    cmdBufferAllocInfo.level = vk::CommandBufferLevel::ePrimary;
     cmdBufferAllocInfo.commandBufferCount = m_swapchain.getImageCount();
 
     try {
@@ -337,14 +338,14 @@ void VkBackend::createDepthBuffer()
 {
     // Depth Info
     vk::ImageCreateInfo depthStencilCreateInfo = {};
-    depthStencilCreateInfo.imageType   = vk::ImageType::e2D;
-    depthStencilCreateInfo.extent      = vk::Extent3D(m_size.width, m_size.height, 1);
-    depthStencilCreateInfo.format      = m_depthFormat;
-    depthStencilCreateInfo.mipLevels   = 1;
+    depthStencilCreateInfo.imageType = vk::ImageType::e2D;
+    depthStencilCreateInfo.extent = vk::Extent3D(m_size.width, m_size.height, 1);
+    depthStencilCreateInfo.format = m_depthFormat;
+    depthStencilCreateInfo.mipLevels = 1;
     depthStencilCreateInfo.arrayLayers = 1;
-    depthStencilCreateInfo.samples     = vk::SampleCountFlagBits::e1;
-    depthStencilCreateInfo.usage       = vk::ImageUsageFlagBits::eDepthStencilAttachment
-                                       | vk::ImageUsageFlagBits::eTransferSrc;
+    depthStencilCreateInfo.samples = vk::SampleCountFlagBits::e1;
+    depthStencilCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment
+        | vk::ImageUsageFlagBits::eTransferSrc;
 
     try {
         m_depthImage = m_device.createImage(depthStencilCreateInfo);
@@ -395,10 +396,10 @@ void VkBackend::createDepthBuffer()
 
     // Setting up the view
     vk::ImageViewCreateInfo depthStencilView = {};
-    depthStencilView.viewType         = vk::ImageViewType::e2D;
-    depthStencilView.format           = m_depthFormat;
+    depthStencilView.viewType = vk::ImageViewType::e2D;
+    depthStencilView.format = m_depthFormat;
     depthStencilView.subresourceRange = { aspect, 0, 1, 0, 1 };
-    depthStencilView.image            = m_depthImage;
+    depthStencilView.image = m_depthImage;
     try {
         m_depthView = m_device.createImageView(depthStencilView);
     }
@@ -414,60 +415,60 @@ void VkBackend::createRenderPass()
 {
     std::array<vk::AttachmentDescription, 2> attachments = {};
     // Color Attachment
-    attachments[0].format         = m_colorFormat;
-    attachments[0].samples        = vk::SampleCountFlagBits::e1;
-    attachments[0].loadOp         = vk::AttachmentLoadOp::eClear;
-    attachments[0].storeOp        = vk::AttachmentStoreOp::eStore;
-    attachments[0].stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+    attachments[0].format = m_colorFormat;
+    attachments[0].samples = vk::SampleCountFlagBits::e1;
+    attachments[0].loadOp = vk::AttachmentLoadOp::eClear;
+    attachments[0].storeOp = vk::AttachmentStoreOp::eStore;
+    attachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
     attachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    attachments[0].initialLayout  = vk::ImageLayout::eUndefined;
-    attachments[0].finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+    attachments[0].initialLayout = vk::ImageLayout::eUndefined;
+    attachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
     // Depth Attachment
-    attachments[1].format         = m_depthFormat;
-    attachments[1].samples        = vk::SampleCountFlagBits::e1;
-    attachments[1].loadOp         = vk::AttachmentLoadOp::eClear;
-    attachments[1].storeOp        = vk::AttachmentStoreOp::eStore;
-    attachments[1].stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+    attachments[1].format = m_depthFormat;
+    attachments[1].samples = vk::SampleCountFlagBits::e1;
+    attachments[1].loadOp = vk::AttachmentLoadOp::eClear;
+    attachments[1].storeOp = vk::AttachmentStoreOp::eStore;
+    attachments[1].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
     attachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    attachments[1].initialLayout  = vk::ImageLayout::eUndefined;
-    attachments[1].finalLayout    = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    attachments[1].initialLayout = vk::ImageLayout::eUndefined;
+    attachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
     const vk::AttachmentReference colorReference{ 0,  vk::ImageLayout::eColorAttachmentOptimal };
     const vk::AttachmentReference depthReference{ 1, vk::ImageLayout::eDepthStencilAttachmentOptimal };
-    
-    vk::SubpassDescription subpass  = {};
-    subpass.pipelineBindPoint       = vk::PipelineBindPoint::eGraphics;
-    subpass.colorAttachmentCount    = 1;
-    subpass.pColorAttachments       = &colorReference;
+
+    vk::SubpassDescription subpass = {};
+    subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorReference;
     subpass.pDepthStencilAttachment = &depthReference;
 
     std::array<vk::SubpassDependency, 2> dependencies;
 
-    dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass      = 0;
-    dependencies[0].srcStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
-    dependencies[0].dstStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependencies[0].srcAccessMask   = vk::AccessFlagBits::eMemoryRead;
-    dependencies[0].dstAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
-                                    | vk::AccessFlagBits::eColorAttachmentWrite;
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[0].dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[0].srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+    dependencies[0].dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead
+        | vk::AccessFlagBits::eColorAttachmentWrite;
     dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
-    dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass      = 0;
-    dependencies[0].srcStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependencies[0].dstStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
-    dependencies[0].srcAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
-                                    | vk::AccessFlagBits::eColorAttachmentWrite; 
-    dependencies[0].dstAccessMask   = vk::AccessFlagBits::eMemoryRead;
-    dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;    
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[0].dstStageMask = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[0].srcAccessMask = vk::AccessFlagBits::eColorAttachmentRead
+        | vk::AccessFlagBits::eColorAttachmentWrite;
+    dependencies[0].dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+    dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
     vk::RenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
-    renderPassInfo.pAttachments    = attachments.data();
-    renderPassInfo.subpassCount    = 1;
-    renderPassInfo.pSubpasses      = &subpass;
+    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());;
-    renderPassInfo.pDependencies   = dependencies.data();
+    renderPassInfo.pDependencies = dependencies.data();
 
     try {
         m_renderPass = m_device.createRenderPass(renderPassInfo);
@@ -505,16 +506,16 @@ void VkBackend::createFrameBuffers()
     attachments[1] = m_depthView;
 
     vk::FramebufferCreateInfo framebufferInfo = {};
-    framebufferInfo.renderPass      = m_renderPass;
+    framebufferInfo.renderPass = m_renderPass;
     framebufferInfo.attachmentCount = 2;
-    framebufferInfo.pAttachments    = attachments.data();
-    framebufferInfo.width           = m_size.width;
-    framebufferInfo.height          = m_size.height;
-    framebufferInfo.layers          = 1;
+    framebufferInfo.pAttachments = attachments.data();
+    framebufferInfo.width = m_size.width;
+    framebufferInfo.height = m_size.height;
+    framebufferInfo.layers = 1;
 
     // create frame buffer for every swapchain image
-    for (uint32_t i = 0; i < m_swapchain.getImageCount(); i++) {        
-        attachments[0] = m_swapchain.getImageView(i);      
+    for (uint32_t i = 0; i < m_swapchain.getImageCount(); i++) {
+        attachments[0] = m_swapchain.getImageView(i);
 
         try {
             m_framebuffers[i] = m_device.createFramebuffer(framebufferInfo);
@@ -577,20 +578,20 @@ void VkBackend::submitFrame()
     uint32_t imageIndex = m_swapchain.getActiveImageIndex();
     m_device.resetFences(m_fences[imageIndex]);
 
-    vk::Semaphore semaphoreRead  = m_swapchain.getActiveReadSemaphore();
+    vk::Semaphore semaphoreRead = m_swapchain.getActiveReadSemaphore();
     vk::Semaphore semaphoreWrite = m_swapchain.getActiveWrittenSemaphore();
 
     // Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
     const vk::PipelineStageFlags waitStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
     vk::SubmitInfo submitInfo = {};
-    submitInfo.waitSemaphoreCount   = 1;                              // One wait semaphore
-    submitInfo.pWaitSemaphores      = &semaphoreRead;                 // Semaphore(s) to wait upon before the submitted command buffer starts executing
-    submitInfo.pWaitDstStageMask    = &waitStageMask;                 // Pointer to the list of pipeline stages that the semaphore waits will occur at
-    submitInfo.commandBufferCount   = 1;                              // One Command Buffer
-    submitInfo.pCommandBuffers      = &m_commandBuffers[imageIndex];  // Command buffers(s) to execute in this batch (submission)
+    submitInfo.waitSemaphoreCount = 1;                              // One wait semaphore
+    submitInfo.pWaitSemaphores = &semaphoreRead;                 // Semaphore(s) to wait upon before the submitted command buffer starts executing
+    submitInfo.pWaitDstStageMask = &waitStageMask;                 // Pointer to the list of pipeline stages that the semaphore waits will occur at
+    submitInfo.commandBufferCount = 1;                              // One Command Buffer
+    submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];  // Command buffers(s) to execute in this batch (submission)
     submitInfo.signalSemaphoreCount = 1;                              // One signal Semaphore
-    submitInfo.pSignalSemaphores    = &semaphoreWrite;                // Semaphore(s) to be signaled when command buffers have completed
+    submitInfo.pSignalSemaphores = &semaphoreWrite;                // Semaphore(s) to be signaled when command buffers have completed
 
     // Submit to the graphics queue passing a wait fence
     try {
@@ -637,11 +638,11 @@ void VkBackend::setupDebugMessenger(bool enableValidationLayers)
 
     vk::DebugUtilsMessengerCreateInfoEXT debugInfo = {};
     debugInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-                              | vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
-                              | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
-    debugInfo.messageType     = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-                              | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-                              | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+        | vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+        | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+    debugInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+        | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+        | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
     debugInfo.pfnUserCallback = debugCallback;
 
     try {
@@ -683,8 +684,8 @@ bool VkBackend::checkValidationLayerSupport(const ContextCreateInfo& info)
 //
 bool VkBackend::checkDeviceExtensionSupport(const ContextCreateInfo& info, std::vector<vk::ExtensionProperties>& extensionProperties)
 {
-    std::set<std::string> requiredExtensions(info.deviceExtensions.begin(), 
-                                             info.deviceExtensions.end());
+    std::set<std::string> requiredExtensions(info.deviceExtensions.begin(),
+        info.deviceExtensions.end());
 
     for (const auto& extension : extensionProperties) {
         requiredExtensions.erase(extension.extensionName);
@@ -702,8 +703,8 @@ bool VkBackend::checkDeviceExtensionSupport(const ContextCreateInfo& info, std::
 //
 ContextCreateInfo::ContextCreateInfo()
 {
-    deviceExtensions   = std::vector<const char*>();
-    validationLayers   = std::vector<const char*>();
+    deviceExtensions = std::vector<const char*>();
+    validationLayers = std::vector<const char*>();
     instanceExtensions = std::vector<const char*>();
 
     if (enableValidationLayers) {
@@ -738,4 +739,5 @@ void ContextCreateInfo::addValidationLayer(const char* name)
     deviceExtensions.emplace_back(name);
 }
 
+} // namespace core
 } // namespace vkb

@@ -11,6 +11,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace vkb {
+namespace core {
 
 ///////////////////////////////////////////////////////////////////////////
 // SwapChain                                                             //
@@ -117,4 +118,5 @@ private:
 
 }; // class SwapChain
 
+} // namespace core
 } // namespace vkb

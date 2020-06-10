@@ -18,6 +18,7 @@
 #include "swapchain.hpp"
 
 namespace vkb {
+namespace core {
 
 ///////////////////////////////////////////////////////////////////////////
 // ContextCreateInfo                                                     //
@@ -49,7 +50,7 @@ struct ContextCreateInfo
     std::vector<const char*> instanceExtensions;
 
     const char* appEngine = "No Engine";
-    const char* appTitle  = "Application";
+    const char* appTitle = "Application";
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -113,24 +114,24 @@ public:
     //-------------------------------------------------------------------------
     // Collection of Getter Methods
     //
-    vk::Instance                          getInstance()           { return m_instance; }
-    vk::Device                            getDevice()             { return m_device; }
-    vk::PhysicalDevice                    getPhysicalDevice()     { return m_physicalDevice; }
-    vk::SurfaceKHR                        getSurface()            { return m_surface; }
-    vk::Queue                             getGraphicsQueue()      { return m_graphicsQueue; }
-    uint32_t                              getGraphicsQueueIdx()   { return m_graphicsQueueIdx; }
-    vk::Queue                             getPresentQueue()       { return m_presentQueue; }
-    uint32_t                              getPresentQueueIdx()    { return m_presentQueueIdx; }
-    vk::Extent2D                          getSize()               { return m_size; }
-    vk::RenderPass                        getRenderPass()         { return m_renderPass; }
-    vk::PipelineCache                     getPipelineCache()      { return m_pipelineCache; }
-    const std::vector<vk::Framebuffer>&   getFramebuffers()       { return m_framebuffers; }
-    const std::vector<vk::CommandBuffer>& getCommandBuffers()     { return m_commandBuffers; }
+    vk::Instance                          getInstance() { return m_instance; }
+    vk::Device                            getDevice() { return m_device; }
+    vk::PhysicalDevice                    getPhysicalDevice() { return m_physicalDevice; }
+    vk::SurfaceKHR                        getSurface() { return m_surface; }
+    vk::Queue                             getGraphicsQueue() { return m_graphicsQueue; }
+    uint32_t                              getGraphicsQueueIdx() { return m_graphicsQueueIdx; }
+    vk::Queue                             getPresentQueue() { return m_presentQueue; }
+    uint32_t                              getPresentQueueIdx() { return m_presentQueueIdx; }
+    vk::Extent2D                          getSize() { return m_size; }
+    vk::RenderPass                        getRenderPass() { return m_renderPass; }
+    vk::PipelineCache                     getPipelineCache() { return m_pipelineCache; }
+    const std::vector<vk::Framebuffer>& getFramebuffers() { return m_framebuffers; }
+    const std::vector<vk::CommandBuffer>& getCommandBuffers() { return m_commandBuffers; }
     uint32_t                              getCurrentFrame() const { return m_swapchain.getActiveImageIndex(); }
     vk::Format                            getColorFormat()  const { return m_colorFormat; }
     vk::Format                            getDepthFormat()  const { return m_depthFormat; }
     vk::SampleCountFlagBits               getSampleCount()  const { return m_sampleCount; }
-     
+
 protected:
 
     vk::Instance                   m_instance;
@@ -145,7 +146,7 @@ protected:
     uint32_t                       m_presentQueueIdx{ VK_QUEUE_FAMILY_IGNORED };
 
     vkb::SwapChain                 m_swapchain;
-    std::vector<vk::Framebuffer>   m_framebuffers; 
+    std::vector<vk::Framebuffer>   m_framebuffers;
     std::vector<vk::CommandBuffer> m_commandBuffers;
 
     vk::CommandPool                m_commandPool;
@@ -154,12 +155,12 @@ protected:
     vk::DeviceMemory               m_depthMemory;
     vk::ImageView                  m_depthView;
 
-    vk::RenderPass                 m_renderPass; 
-    vk::PipelineCache              m_pipelineCache;    
+    vk::RenderPass                 m_renderPass;
+    vk::PipelineCache              m_pipelineCache;
 
     std::vector<vk::Fence>         m_fences;
 
-    vk::Extent2D                   m_size{ 0, 0 };  
+    vk::Extent2D                   m_size{ 0, 0 };
 
     vk::Format                     m_depthFormat{ vk::Format::eUndefined };
     vk::Format                     m_colorFormat{ vk::Format::eUndefined };
@@ -167,4 +168,5 @@ protected:
 
 }; // classVkBackend
 
+} // namespace core 
 } // namespace vkb

@@ -16,6 +16,7 @@ static vkb::debug::DebugUtil s_debug;
 #endif // _DEBUG
 
 namespace vkb {
+namespace core {
 
 ///////////////////////////////////////////////////////////////////////////
 // Swapchain                                                             //
@@ -25,17 +26,17 @@ namespace vkb {
 // Initialization of swapchain class variables
 //
 bool SwapChain::init(vk::Instance instance, vk::Device device, vk::PhysicalDevice physicalDevice,
-                     vk::Queue graphicsQueue, uint32_t graphicsQueueIdx, vk::Queue presentQueue,
-                     uint32_t presentQueueIdx, vk::SurfaceKHR surface, vk::Format format)
+    vk::Queue graphicsQueue, uint32_t graphicsQueueIdx, vk::Queue presentQueue,
+    uint32_t presentQueueIdx, vk::SurfaceKHR surface, vk::Format format)
 {
     assert(!m_device && "VkDevice must exist for swapchain");
-    m_device           = device;
-    m_physicalDevice   = physicalDevice;
-    m_graphicsQueue    = graphicsQueue;
+    m_device = device;
+    m_physicalDevice = physicalDevice;
+    m_graphicsQueue = graphicsQueue;
     m_graphicsQueueIdx = graphicsQueueIdx;
-    m_presentQueue     = presentQueue;
-    m_presentQueueIdx  = presentQueueIdx;
-    m_surface          = surface;
+    m_presentQueue = presentQueue;
+    m_presentQueueIdx = presentQueueIdx;
+    m_surface = surface;
 
     m_changeID = 0;
     m_currentSemaphore = 0;
@@ -48,18 +49,18 @@ bool SwapChain::init(vk::Instance instance, vk::Device device, vk::PhysicalDevic
     std::vector<vk::SurfaceFormatKHR> surfaceFormats = physicalDevice.getSurfaceFormatsKHR(surface);
 
     m_surfaceFormat = vk::Format::eB8G8R8A8Unorm;
-    m_surfaceColor  = surfaceFormats[0].colorSpace;
+    m_surfaceColor = surfaceFormats[0].colorSpace;
 
     // Check if  format is supported 
     for (uint32_t i = 0; i < static_cast<uint32_t>(surfaceFormats.size()); i++) {
         if (surfaceFormats[i].format == format) {
             m_surfaceFormat = format;
-            m_surfaceColor  = surfaceFormats[i].colorSpace;
+            m_surfaceColor = surfaceFormats[i].colorSpace;
             return true;
         }
     }
-    
-    return false;        
+
+    return false;
 }
 
 //-------------------------------------------------------------------------
@@ -71,16 +72,16 @@ void SwapChain::deinitResources()
         return;
 
     vkDeviceWaitIdle(m_device);
-    
+
     for (auto iter : m_entries) {
         m_device.destroyImageView(iter.imageView);
         m_device.destroySemaphore(iter.readSemaphore);
         m_device.destroySemaphore(iter.writtenSemaphore);
     }
 
-    if(m_swapchain) 
+    if (m_swapchain)
         m_device.destroySwapchainKHR(m_swapchain);
-   
+
     m_entries.clear();
     m_barriers.clear();
 }
@@ -92,9 +93,9 @@ void SwapChain::destroy()
 {
     deinitResources();
     m_physicalDevice = nullptr;
-    m_device         = nullptr;
-    m_surface        = nullptr;
-    m_changeID       = 0;
+    m_device = nullptr;
+    m_surface = nullptr;
+    m_changeID = 0;
 }
 
 //-------------------------------------------------------------------------
@@ -135,7 +136,7 @@ void SwapChain::update(uint32_t width, uint32_t height, bool vsync)
     if (surfaceCaps.currentExtent.width == -1) {
         // If the surface size is undefined, the size is set to
         // the size of the images requested.
-        swapchainExtent = vk::Extent2D{width, height};
+        swapchainExtent = vk::Extent2D{ width, height };
     }
     else {
         // If the surface size is defined, the swap chain size must match
@@ -160,19 +161,19 @@ void SwapChain::update(uint32_t width, uint32_t height, bool vsync)
     }
 
     vk::SwapchainCreateInfoKHR createInfo = {};
-    createInfo.surface          = m_surface;
-    createInfo.minImageCount    = desiredSwapchainImages;
-    createInfo.imageFormat      = m_surfaceFormat;
-    createInfo.imageColorSpace  = m_surfaceColor;
-    createInfo.imageExtent      = swapchainExtent;
+    createInfo.surface = m_surface;
+    createInfo.minImageCount = desiredSwapchainImages;
+    createInfo.imageFormat = m_surfaceFormat;
+    createInfo.imageColorSpace = m_surfaceColor;
+    createInfo.imageExtent = swapchainExtent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage       = vk::ImageUsageFlagBits::eColorAttachment 
-                                | vk::ImageUsageFlagBits::eStorage 
-                                | vk::ImageUsageFlagBits::eTransferDst;
-    createInfo.preTransform     = preTransform;
-    createInfo.presentMode      = presentMode;
-    createInfo.clipped          = VK_TRUE;
-    createInfo.compositeAlpha  = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+    createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment
+        | vk::ImageUsageFlagBits::eStorage
+        | vk::ImageUsageFlagBits::eTransferDst;
+    createInfo.preTransform = preTransform;
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = VK_TRUE;
+    createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
 
     createInfo.oldSwapchain = oldSwapchain;
 
@@ -202,7 +203,7 @@ void SwapChain::update(uint32_t width, uint32_t height, bool vsync)
 
     // if existing swapchain is re-created, destroy old swapchain and cleanup
     if (oldSwapchain) {
-        for (auto iter : m_entries){
+        for (auto iter : m_entries) {
             m_device.destroyImageView(iter.imageView);
             m_device.destroySemaphore(iter.readSemaphore);
             m_device.destroySemaphore(iter.writtenSemaphore);
@@ -223,13 +224,13 @@ void SwapChain::update(uint32_t width, uint32_t height, bool vsync)
 
     m_entries.resize(m_imageCount);
     m_barriers.resize(m_imageCount);
-    
+
     for (uint32_t i = 0; i < m_imageCount; i++) {
         Entry& entry = m_entries[i];
-        
+
         // image
         entry.image = swapchainImages[i];
-       
+
         // imageview
         imageViewCreateInfo.image = swapchainImages[i];
         try {
@@ -241,43 +242,43 @@ void SwapChain::update(uint32_t width, uint32_t height, bool vsync)
 
         // semaphore
         vk::SemaphoreCreateInfo semCreateInfo = {};
-        entry.readSemaphore    = m_device.createSemaphore(semCreateInfo);
+        entry.readSemaphore = m_device.createSemaphore(semCreateInfo);
         entry.writtenSemaphore = m_device.createSemaphore(semCreateInfo);
 
         // initial barriers
         vk::ImageSubresourceRange range = {};
-        range.aspectMask     = vk::ImageAspectFlagBits::eColor;
-        range.baseMipLevel   = 0;
-        range.levelCount     = VK_REMAINING_MIP_LEVELS;
+        range.aspectMask = vk::ImageAspectFlagBits::eColor;
+        range.baseMipLevel = 0;
+        range.levelCount = VK_REMAINING_MIP_LEVELS;
         range.baseArrayLayer = 0;
-        range.layerCount     = VK_REMAINING_ARRAY_LAYERS;
+        range.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
         vk::ImageMemoryBarrier barrier = {};
-        barrier.oldLayout        = vk::ImageLayout::eUndefined;
-        barrier.newLayout        = vk::ImageLayout::ePresentSrcKHR;
-        barrier.image            = entry.image;
+        barrier.oldLayout = vk::ImageLayout::eUndefined;
+        barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+        barrier.image = entry.image;
         barrier.subresourceRange = range;
 
         m_barriers[i] = barrier;
 
 #if _DEBUG
-    entry.debugImageName            = "swapchainImage:" + std::to_string(i);
-    entry.debugImageViewName        = "swapchainImageView:" + std::to_string(i);
-    entry.debugReadSemaphoreName    = "swapchainReadSemaphore:" + std::to_string(i);
-    entry.debugWrittenSemaphoreName = "swapchainWrittenSemaphore:" + std::to_string(i);
-    s_debug.setObjectName(entry.image, entry.debugImageName.c_str());
-    s_debug.setObjectName(entry.imageView, entry.debugImageViewName.c_str());
-    s_debug.setObjectName(entry.readSemaphore, entry.debugReadSemaphoreName.c_str());
-    s_debug.setObjectName(entry.writtenSemaphore, entry.debugWrittenSemaphoreName.c_str());
+        entry.debugImageName = "swapchainImage:" + std::to_string(i);
+        entry.debugImageViewName = "swapchainImageView:" + std::to_string(i);
+        entry.debugReadSemaphoreName = "swapchainReadSemaphore:" + std::to_string(i);
+        entry.debugWrittenSemaphoreName = "swapchainWrittenSemaphore:" + std::to_string(i);
+        s_debug.setObjectName(entry.image, entry.debugImageName.c_str());
+        s_debug.setObjectName(entry.imageView, entry.debugImageViewName.c_str());
+        s_debug.setObjectName(entry.readSemaphore, entry.debugReadSemaphoreName.c_str());
+        s_debug.setObjectName(entry.writtenSemaphore, entry.debugWrittenSemaphoreName.c_str());
 #endif
     }
 
-    m_width  = width;
+    m_width = width;
     m_height = height;
-    m_vsync  = vsync;
+    m_vsync = vsync;
 
     m_currentSemaphore = 0;
-    m_currentImage     = 0;
+    m_currentImage = 0;
 }
 
 //-------------------------------------------------------------------------
@@ -294,9 +295,9 @@ vk::Result SwapChain::acquire()
 //
 vk::Result SwapChain::acquireSemaphore(vk::Semaphore semaphore)
 {
-    const vk::Result result 
+    const vk::Result result
         = m_device.acquireNextImageKHR(m_swapchain, UINT64_MAX, semaphore, {}, &m_currentImage);
-    
+
     if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
         throw std::error_code(result);
     }
@@ -312,11 +313,11 @@ void SwapChain::present(vk::Queue queue)
     const vk::Semaphore& written = getActiveWrittenSemaphore();
 
     vk::PresentInfoKHR presentInfo = {};
-    presentInfo.swapchainCount     = 1;
+    presentInfo.swapchainCount = 1;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores    = &written;
-    presentInfo.pSwapchains        = &m_swapchain;
-    presentInfo.pImageIndices      = &m_currentImage;
+    presentInfo.pWaitSemaphores = &written;
+    presentInfo.pSwapchains = &m_swapchain;
+    presentInfo.pImageIndices = &m_currentImage;
 
     m_currentSemaphore++;
 
@@ -331,9 +332,9 @@ void SwapChain::present(vk::Queue queue)
 void SwapChain::cmdUpdateBarriers(vk::CommandBuffer cmdBuffer) const
 {
     cmdBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe,
-                              vk::PipelineStageFlagBits::eTopOfPipe, 
-                              vk::DependencyFlags(), 0, NULL, 0, NULL, m_imageCount, 
-                              m_barriers.data());
+        vk::PipelineStageFlagBits::eTopOfPipe,
+        vk::DependencyFlags(), 0, NULL, 0, NULL, m_imageCount,
+        m_barriers.data());
 }
 
 //-------------------------------------------------------------------------
@@ -373,4 +374,5 @@ vk::ImageView SwapChain::getImageView(uint32_t i) const
     return m_entries[i].imageView;
 }
 
+} // namespace core
 } // namespace vkb
