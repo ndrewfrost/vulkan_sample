@@ -32,11 +32,11 @@ public:
 private:
 protected:
 private:
-    std::vector<uint8_t> data;
+    std::vector<uint8_t> m_data;
 
-    vk::Format           format{ vk::Format::eUndefined };
+    vk::Format           m_format{ vk::Format::eUndefined };
 
-    std::vector<Mipmap>  mipmaps{ {} };
+    std::vector<Mipmap>  m_mipmaps{ {} };
 
 
 };

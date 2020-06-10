@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "../component.hpp"
+#include "../../core/buffer.hpp"
 #include "material.hpp"
 
 namespace vkb {
@@ -33,7 +34,7 @@ public:
 
     void setMaterial(const Material & material);
 
-    const Material* getMaterial() const { return material; }
+    const Material* getMaterial() const { return m_material; }
 
     void setAttribute();
 
@@ -49,21 +50,21 @@ private:
 
 public:
 
-    uint32_t indexOffset    = 0;
-    uint32_t verticesOffest = 0;
-    uint32_t vertexIndices  = 0;
+    uint32_t m_indexOffset    = 0;
+    uint32_t m_verticesOffest = 0;
+    uint32_t m_vertexIndices  = 0;
 
-    std::unordered_map<std::string, Buffer> vertexBuffer;
+    std::unordered_map<std::string, core::Buffer> m_vertexBuffer;
 
-    std::unique_ptr<Buffer> indexBuffer;
+    std::unique_ptr<core::Buffer> m_indexBuffer;
 
 private:
 
-    std::unordered_map<std::string, VertexAttribute> vertexAttributes;
+    std::unordered_map<std::string, VertexAttribute> m_vertexAttributes;
 
-    const Material* material{ nullptr };
+    const Material* m_material{ nullptr };
 
-    ShaderVariant shaderVariant;
+    ShaderVariant m_shaderVariant;
 };
 
 } // namespace sg

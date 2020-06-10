@@ -34,13 +34,13 @@ public:
     Image& operator=(Image&&) = delete;
 
 private:
-    vk::Device& device;
+    vk::Device&   m_device;
 
-    vk::Image handle = nullptr;
+    vk::Image     m_handle = nullptr;
 
-    VmaAllocation memory{ VK_NULL_HANDLE };
+    VmaAllocation m_memory{ VK_NULL_HANDLE };
 
-    vk::ImageType type;
+    vk::ImageType m_type;
 };
 
 } // namespace core

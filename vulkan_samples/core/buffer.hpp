@@ -34,11 +34,11 @@ public:
     Buffer& operator=(Buffer&&) = delete;
 
 private:
-    vk::Device& device;
+    vk::Device&   m_device;
 
-    vk::Buffer handle = nullptr;
+    vk::Buffer    m_handle = nullptr;
 
-    VmaAllocation memory{ VK_NULL_HANDLE };
+    VmaAllocation m_memory{ VK_NULL_HANDLE };
 
 };
 

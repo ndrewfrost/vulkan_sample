@@ -23,18 +23,18 @@ class Component
 public:
     Component() = default;
 
-    Component(const std::string& name) : name(name) {}
+    Component(const std::string& name) : m_name(name) {}
 
     Component(Component&& other) = default;
 
     virtual ~Component() = default;
 
-    const std::string& getName() const { return name; }
+    const std::string& getName() const { return m_name; }
 
     virtual std::type_index getType() = 0;
 
 private:
-    std::string name;
+    std::string m_name;
 };
 
 } // namespace sg

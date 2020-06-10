@@ -37,15 +37,16 @@ public:
 
     virtual std::type_index getType() override { return typeid(Material); }
 
-    std::unordered_map<std::string, Texture*> textures;    
+public:
+    std::unordered_map<std::string, Texture*> m_textures;
 
-    glm::vec3 emissive{ 0.0f, 0.0f, 0.0f };
+    glm::vec3 m_emissive{ 0.0f, 0.0f, 0.0f };
 
-    bool      doubleSided{ false };
+    bool      m_doubleSided{ false };
 
-    float     alphaCutoff{ 0.5f };
+    float     m_alphaCutoff{ 0.5f };
 
-    AlphaMode alphaMode{ AlphaMode::Opaque };
+    AlphaMode m_alphaMode{ AlphaMode::Opaque };
 
 }; // class Material
 

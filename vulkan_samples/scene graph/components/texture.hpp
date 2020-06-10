@@ -39,8 +39,8 @@ public:
     Sampler* getSampler();
 
 private:
-    Image*   image{ nullptr };
-    Sampler* sampler{ nullptr };
+    Image*   m_image{ nullptr };
+    Sampler* m_sampler{ nullptr };
 
 }; // class Texture
 
