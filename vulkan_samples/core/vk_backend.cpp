@@ -444,31 +444,31 @@ void VkBackend::createRenderPass()
 
     std::array<vk::SubpassDependency, 2> dependencies;
 
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = vk::PipelineStageFlagBits::eBottomOfPipe;
-    dependencies[0].dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependencies[0].srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-    dependencies[0].dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead
-        | vk::AccessFlagBits::eColorAttachmentWrite;
+    dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass      = 0;
+    dependencies[0].srcStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[0].dstStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[0].srcAccessMask   = vk::AccessFlagBits::eMemoryRead;
+    dependencies[0].dstAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
+                                    | vk::AccessFlagBits::eColorAttachmentWrite;
     dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    dependencies[0].dstStageMask = vk::PipelineStageFlagBits::eBottomOfPipe;
-    dependencies[0].srcAccessMask = vk::AccessFlagBits::eColorAttachmentRead
-        | vk::AccessFlagBits::eColorAttachmentWrite;
-    dependencies[0].dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-    dependencies[0].dependencyFlags = vk::DependencyFlagBits::eByRegion;
+    dependencies[1].srcSubpass      = 0;
+    dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask    = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    dependencies[1].dstStageMask    = vk::PipelineStageFlagBits::eBottomOfPipe;
+    dependencies[1].srcAccessMask   = vk::AccessFlagBits::eColorAttachmentRead
+                                    | vk::AccessFlagBits::eColorAttachmentWrite;
+    dependencies[1].dstAccessMask   = vk::AccessFlagBits::eMemoryRead;
+    dependencies[1].dependencyFlags = vk::DependencyFlagBits::eByRegion;
 
     vk::RenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());;
-    renderPassInfo.pDependencies = dependencies.data();
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments    = attachments.data();
+    renderPassInfo.subpassCount    = 1;
+    renderPassInfo.pSubpasses      = &subpass;
+    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+    renderPassInfo.pDependencies   = dependencies.data();
 
     try {
         m_renderPass = m_device.createRenderPass(renderPassInfo);
@@ -502,6 +502,11 @@ void VkBackend::createPipelineCache()
 //
 void VkBackend::createFrameBuffers()
 {
+    // recreate frame buffers
+    for (auto framebuffer : m_framebuffers)
+        m_device.destroyFramebuffer(framebuffer);
+    m_framebuffers.resize(m_swapchain.getImageCount());
+
     std::array<vk::ImageView, 2> attachments;
     attachments[1] = m_depthView;
 
