@@ -23,9 +23,11 @@ public:
 
     VkExample() = default;
 
-    virtual ~VkExample();
+    virtual ~VkExample() = default;
 
     virtual void setupVulkan(const core::ContextCreateInfo& info, GLFWwindow* window) override;
+
+    void run();
 
     virtual void onWindowResize(uint32_t width, uint32_t height) override;
     

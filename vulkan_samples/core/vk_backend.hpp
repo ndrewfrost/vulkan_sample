@@ -125,7 +125,7 @@ public:
     vk::Extent2D                          getSize() { return m_size; }
     vk::RenderPass                        getRenderPass() { return m_renderPass; }
     vk::PipelineCache                     getPipelineCache() { return m_pipelineCache; }
-    const std::vector<vk::Framebuffer>& getFramebuffers() { return m_framebuffers; }
+    const std::vector<vk::Framebuffer>&   getFramebuffers() { return m_framebuffers; }
     const std::vector<vk::CommandBuffer>& getCommandBuffers() { return m_commandBuffers; }
     uint32_t                              getCurrentFrame() const { return m_swapchain.getActiveImageIndex(); }
     vk::Format                            getColorFormat()  const { return m_colorFormat; }
@@ -145,7 +145,7 @@ protected:
     uint32_t                       m_graphicsQueueIdx{ VK_QUEUE_FAMILY_IGNORED };
     uint32_t                       m_presentQueueIdx{ VK_QUEUE_FAMILY_IGNORED };
 
-    vkb::SwapChain                 m_swapchain;
+    vkb::core::SwapChain           m_swapchain;
     std::vector<vk::Framebuffer>   m_framebuffers;
     std::vector<vk::CommandBuffer> m_commandBuffers;
 
