@@ -23,7 +23,7 @@ void VkBackend::setupVulkan(const ContextCreateInfo& info, GLFWwindow* window)
 {
     initInstance(info);
 
-    setupDebugMessenger(false);
+    setupDebugMessenger(info.enableValidationLayers);
 
     createSurface(window);
 

@@ -41,4 +41,11 @@ void VkExample::setupVulkan(const core::ContextCreateInfo& info, GLFWwindow* win
     //BuildCommandBuffers()
 }
 
+//-------------------------------------------------------------------------
+// Called on window resize
+//
+void VkExample::onWindowResize(uint32_t width, uint32_t height)
+{
+}
+
 } // namespace app
