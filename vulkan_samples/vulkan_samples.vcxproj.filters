@@ -11,6 +11,7 @@
     <ClCompile Include="external\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="core\swapchain.cpp" />
+    <ClCompile Include="helper\camera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="example_vulkan.hpp" />
@@ -19,5 +20,6 @@
     <ClInclude Include="helper\debug.hpp" />
     <ClInclude Include="external\vma\vk_mem_alloc.h" />
     <ClInclude Include="common\glm_common.h" />
+    <ClInclude Include="helper\camera.hpp" />
   </ItemGroup>
 </Project>
