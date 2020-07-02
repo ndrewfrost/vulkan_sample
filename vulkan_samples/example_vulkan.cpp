@@ -19,10 +19,14 @@ namespace vkb {
 //
 void VkExample::setupVulkan(const core::ContextCreateInfo& info, GLFWwindow* window)
 {
-    //VkBackend
+    // Vk Backend
     core::VkBackend::setupVulkan(info, window);
 
-    //setUpCamera()
+    // Setup Camera
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    CameraView.setWindowSize(width, height);
+    CameraView.setLookAt(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
 
     //loadAssets()
 

@@ -50,7 +50,7 @@ void Camera::update()
     m_matrix = glm::lookAt(m_pos, m_int, m_up);
 
     if (!isZero(m_roll)) {
-        glm::mat4 rotate = glm::rotate(m_roll, glm::vec3(0, 0, 1));
+        glm::mat4 rotate = glm::rotate(m_roll, glm::vec3(0.f, 0.f, 1.f));
         m_matrix = m_matrix * rotate;
     }
 }
@@ -58,7 +58,7 @@ void Camera::update()
 //-------------------------------------------------------------------------
 // Set camera information and derive viewing matrix
 //
-void Camera::setLookAt(glm::vec3& eye, glm::vec3& center, glm::vec3& up)
+void Camera::setLookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up)
 {
     m_pos = eye;
     m_int = center;
@@ -83,6 +83,15 @@ void Camera::getLookAt(glm::vec3& eye, glm::vec3& center, glm::vec3& up) const
 const glm::mat4& Camera::getMatrix() const
 {
     return m_matrix;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Set window size, call when the size of the window changes
+//
+void Camera::setWindowSize(uint32_t w, uint32_t h)
+{
+    m_width = w;
+    m_height = h;
 }
 
 

@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtx/rotate_vector.hpp>
+#include "../common/glm_common.h"
 
 namespace tools {
 
@@ -20,17 +19,25 @@ namespace tools {
 class Camera
 {
 public:
+    static Camera& Singleton()
+    {
+        static Camera camera;
+        return camera;
+    }
+
     Camera();
 
     ~Camera() = default;
 
     void update();
 
-    void setLookAt(glm::vec3& eye, glm::vec3& center, glm::vec3& up);
+    void setLookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 
     void getLookAt(glm::vec3& eye, glm::vec3& center, glm::vec3& up) const;
 
     const glm::mat4& getMatrix() const;
+
+    void setWindowSize(uint32_t w, uint32_t h);
 
 private:
     // Camera Position
@@ -41,9 +48,11 @@ private:
     float     m_roll   = 0.f; // Rotation around Z axis
 
     // Screen 
-    int m_width  = 1;
-    int m_height = 1;
+    uint32_t m_width  = 1;
+    uint32_t m_height = 1;
 
 }; // ! class Camera
 
 } // ! namespace tools
+
+#define CameraView tools::Camera::Singleton()
